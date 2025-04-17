@@ -22,7 +22,7 @@ TARGET_DYLIB=$(find "$WORK_DIR" -name "*.dylib" | head -n 1)
 if [ -n "$TARGET_DYLIB" ]; then
   echo "🎯 自动识别到目标 Dylib: $TARGET_DYLIB"
   echo "🚀 启动 Frida 分析（自动 attach）..."
-  timeout 10s frida -n SpringBoard -l "$SCRIPT_DIR/frida_script.js" --runtime=v8
+  timeout 10s frida -n SpringBoard -l "$SCRIPT_DIR/frida_script.js" --runtime=v8 || echo "⚠️ Frida 分析失败或超时"
 else
   echo "⚠️ 未找到目标 Dylib，跳过 Frida 分析"
 fi
@@ -30,7 +30,5 @@ fi
 # 生成 Hook 源码
 echo "⚙️ 正在生成 Hook 源码..."
 mkdir -p "$SRC_DIR"
-python3 scripts/generate_hooks_from_lief.py "$RAW_DIR/lief_output.txt" "$SRC_DIR/Tweak.xm"
-python3 scripts/generate_makefile.py "$SRC_DIR/Makefile"
-cp scripts/Plugin.h "$SRC_DIR/Plugin.h"
+python3 scripts/generate_hooks_from_lief.py
 echo "✅ Hook 源码已生成: $SRC_DIR"
