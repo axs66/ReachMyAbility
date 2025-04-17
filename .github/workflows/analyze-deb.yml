@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       deb_file:
-        description: 'Path or URL to .deb file (e.g. deb/1.deb or https://raw.githubusercontent.com/...)'
+        description: 'Path or URL to .deb file'
         required: true
+        default: 'deb/1.deb'
 
 permissions:
   contents: write  # 允许提交回仓库
