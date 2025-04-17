@@ -49,9 +49,12 @@ jobs:
         fi
 
     - name: Commit and push results
+      env:
+        TOKEN: ${{ secrets.PAT }}
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
         git add output/
-        git commit -m "Auto extract and analyze deb content"
+        git commit -m "Auto extract and analyze deb content" || echo "Nothing to commit"
+        git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
         git push
