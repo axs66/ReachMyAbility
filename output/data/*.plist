@@ -1,7 +1,0 @@
-<key>Filter</key>
-<dict>
-    <key>Bundles</key>
-    <array>
-        <string>com.tencent.xin</string> <!-- 注入微信 -->
-    </array>
-</dict>
