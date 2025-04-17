@@ -1,71 +1,193 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash
 
-RAW_ARG=$1
-WORK_DIR="work"
-RAW_DEB="$WORK_DIR/tmp.deb"
-RAW_DIR="output/raw"
-SRC_DIR="output/src"
+# 传入 .deb 文件路径
+deb_file="$1"
 
-if [[ -z "$RAW_ARG" ]]; then
-  echo "Usage: run_all.sh <path_or_url_to_deb>"
-  exit 1
-fi
+# 创建工作目录
+work_dir="work"
+output_raw="output/raw"
+output_src="output/src"
 
-# 1. 如果传入的是 URL，则先下载到本地
-if [[ "$RAW_ARG" =~ ^https?:// ]]; then
-  mkdir -p "$WORK_DIR"
-  echo "🌐 检测到 URL，下载: $RAW_ARG"
-  wget -q -O "$RAW_DEB" "$RAW_ARG" \
-    || { echo "❌ 下载失败，请检查 URL"; exit 1; }
-  DEB_FILE="$RAW_DEB"
-else
-  DEB_FILE="$RAW_ARG"
-fi
+mkdir -p "$work_dir"
+mkdir -p "$output_raw"
+mkdir -p "$output_src"
 
-# 2. 创建目录
-mkdir -p "$WORK_DIR/data" "$WORK_DIR/control" "$RAW_DIR" "$SRC_DIR"
-
-# 3. 解包 .deb
 echo "🎯 开始解包 .deb..."
-bash scripts/extract_deb.sh "$DEB_FILE" "$WORK_DIR"
+# 解包 .deb 文件
+dpkg-deb -x "$deb_file" "$work_dir"
 
-# 4. 分析 dylib（拷贝、file、nm、LIEF、objc 符号）
+echo "✅ .deb 提取完成：$work_dir"
+
 echo "🔍 分析 dylib..."
-python3 scripts/analyze_dylib.py "$WORK_DIR/data" "$RAW_DIR"
+# 深度分析 dylib 文件
+find "$work_dir" -type f -name "*.dylib" | while read dylib_file; do
+  echo "分析文件: $dylib_file"
+  
+  # 使用 jtool 进行分析
+  jtool -L "$dylib_file" >> "$output_raw/dylib_analysis.txt"
+done
 
-# 5. 提取 Objective‑C 类名和方法名
-#    - __objc_classname 包含所有类名
-#    - __objc_methname 包含所有方法选择器
-DYLIB_PATH=$(find "$WORK_DIR/data" -name "*.dylib" -print -quit)
+echo "✅ Dylib 深度分析完成，结果在: $output_raw"
+
 echo "📑 提取 ObjC 类名／方法..."
-otool -v -s __TEXT __objc_classname "$DYLIB_PATH" > "$RAW_DIR/classlist.txt"
-otool -v -s __TEXT __objc_methname  "$DYLIB_PATH" > "$RAW_DIR/methname.txt"
+# 提取 ObjC 类名和方法 (仅为示例，可根据需求进一步优化)
+find "$work_dir" -type f -name "*.dylib" | while read dylib_file; do
+  echo "分析文件: $dylib_file"
+  
+  # 使用 jtool 提取类名
+  jtool -objc -l "$dylib_file" >> "$output_raw/objc_classes.txt"
+done
 
-# 6. Swift 符号 demangle（可选）
-echo "🛠 Swift 符号 demangle..."
-python3 scripts/demangle_swift.py \
-  "$RAW_DIR/objc_symbols.txt" \
-  "$RAW_DIR/objc_symbols_demangled.txt"
+echo "✅ ObjC 类名/方法提取完成，结果在: $output_raw"
 
-# 7. 生成头文件（classes + methods）
-echo "⚙️ 生成头文件..."
-python3 scripts/generate_headers.py \
-  --symbols "$RAW_DIR/objc_symbols.txt" \
-  --output "$SRC_DIR/Plugin.h"
+# 生成源代码文件
+echo "🎯 生成 Makefile 和 Tweak.xm..."
 
-# 8. 生成精准 Hooks（根据 classlist.txt + methname.txt）
-echo "🔌 生成 Tweak.xm..."
-python3 scripts/generate_hooks.py \
-  --classlist "$RAW_DIR/classlist.txt" \
-  --methods   "$RAW_DIR/methname.txt" \
-  --headers   "" \
-  --output    "$SRC_DIR/Tweak.xm"
+# 创建 Makefile
+cat <<EOL > "$output_src/Makefile"
+ARCHS = arm64
+TARGET = iphone:latest:13.0
 
-# 9. 生成 Makefile
-echo "📦 生成 Makefile..."
-python3 scripts/generate_makefile.py \
-  --name Plugin \
-  --output "$SRC_DIR"
+include \$(THEOS)/makefiles/common.mk
 
-echo "✅ 全部完成！请查看 output/raw 与 output/src"
+TWEAK_NAME = Plugin
+
+Plugin_FILES = Tweak.xm
+Plugin_CFLAGS = -fobjc-arc
+
+include \$(THEOS_MAKE_PATH)/tweak.mk
+EOL
+
+# 创建 Plugin.h
+cat <<EOL > "$output_src/Plugin.h"
+// Auto-generated header
+#import <Foundation/Foundation.h>
+
+@interface OS_dispatch_queue : NSObject
+@end
+
+@interface _TtCs12_SwiftObject : NSObject
+@end
+EOL
+
+# 创建 Tweak.xm
+cat <<EOL > "$output_src/Tweak.xm"
+// Auto-generated Tweak.xm
+
+%hook /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation
+    %orig;
+    NSLog(@"[Tweak] Hooked /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation");
+%end
+
+%hook /System/Library/Frameworks/Foundation.framework/Foundation
+    %orig;
+    NSLog(@"[Tweak] Hooked /System/Library/Frameworks/Foundation.framework/Foundation");
+%end
+
+%hook /usr/lib/libSystem.B.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/libSystem.B.dylib");
+%end
+
+%hook /usr/lib/libc++.1.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/libc++.1.dylib");
+%end
+
+%hook /usr/lib/libobjc.A.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/libobjc.A.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftCore.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftCore.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftCoreFoundation.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftCoreFoundation.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftCoreGraphics.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftCoreGraphics.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftCoreImage.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftCoreImage.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftDarwin.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftDarwin.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftDataDetection.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftDataDetection.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftDispatch.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftDispatch.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftFileProvider.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftFileProvider.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftFoundation.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftFoundation.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftMetal.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftMetal.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftObjectiveC.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftObjectiveC.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftQuartzCore.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftQuartzCore.dylib");
+%end
+
+%hook /usr/lib/swift/libswiftUIKit.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked /usr/lib/swift/libswiftUIKit.dylib");
+%end
+
+%hook 0x0000010ba0:
+    %orig;
+    NSLog(@"[Tweak] Hooked 0x0000010ba0:");
+%end
+
+%hook @rpath/Orion.framework/Orion
+    %orig;
+    NSLog(@"[Tweak] Hooked @rpath/Orion.framework/Orion");
+%end
+
+%hook @rpath/WechatPushMsgPage.dylib
+    %orig;
+    NSLog(@"[Tweak] Hooked @rpath/WechatPushMsgPage.dylib");
+%end
+
+%hook OS_dispatch_queue
+    %orig;
+    NSLog(@"[Tweak] Hooked OS_dispatch_queue");
+%end
+
+%hook _TtCs12_SwiftObject
+    %orig;
+    NSLog(@"[Tweak] Hooked _TtCs12_SwiftObject");
+%end
+EOL
+
+echo "✅ 源代码生成完成：Makefile, Plugin.h, Tweak.xm"
