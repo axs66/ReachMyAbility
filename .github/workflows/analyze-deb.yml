@@ -57,4 +57,4 @@ jobs:
           git commit -m "Auto: Add analysis result from workflow" || echo "Nothing to commit"
           git push
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT }}
