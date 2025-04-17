@@ -1,32 +1,34 @@
 #!/usr/bin/env python3
 import argparse
-import re
+import os
 
-def generate_tweak(strings_file, output_path):
-    with open(strings_file, 'r') as f:
-        strings = f.read()
+def generate_tweak(symbols_file, output_path):
+    os.makedirs(output_path, exist_ok=True)
+    with open(symbols_file, 'r') as f:
+        symbols = f.read()
     
-    # 启发式检测常见方法
-    hook_targets = []
-    if 'viewDidLoad' in strings:
-        hook_targets.append(('UIViewController', 'viewDidLoad'))
-    if 'applicationDidFinishLaunching' in strings:
-        hook_targets.append(('UIApplication', 'applicationDidFinishLaunching:'))
-    
-    with open(f"{output_path}/Tweak.xm", 'w') as f:
-        f.write("// Auto-generated Tweak.xm\n\n")
-        f.write("%hook ClassName // Replace with actual class\n")
-        for cls, method in hook_targets:
-            f.write(f"%hook {cls}\n")
-            f.write(f"- (void){method} {{\n")
-            f.write(f"    %orig;\n    NSLog(@\"Hooked {method}\");\n}}\n")
+    with open(os.path.join(output_path, "Tweak.xm"), 'w') as f:
+        f.write("// Auto-generated Tweak.xm (Mach-O compatible)\n\n")
+        f.write("#import \"WechatPushMsgPage.h\"\n\n")
+        
+        if '_OBJC_CLASS_$_' in symbols:
+            f.write("%hook ClassName // Replace with actual class name\n")
+            f.write("{\n")
+            f.write("    %orig;\n    NSLog(@\"[WechatPushMsgPage] Hooked method\");\n")
+            f.write("}\n")
             f.write("%end\n\n")
-        f.write("// Add more hooks below based on analysis\n")
+        
+        f.write("/* \n")
+        f.write("Suggested hooks based on symbols:\n")
+        for line in symbols.split('\n'):
+            if '_OBJC_CLASS_$_' in line:
+                class_name = line.split('_OBJC_CLASS_$_')[-1].strip()
+                f.write(f"%hook {class_name}\n// Add methods here\n%end\n\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--strings', required=True)
-    parser.add_argument('--output', required=True)
+    parser.add_argument('--strings', required=True, help='Path to symbols file')
+    parser.add_argument('--output', required=True, help='Output directory')
     args = parser.parse_args()
     
     generate_tweak(args.strings, args.output)
