@@ -29,11 +29,14 @@ jobs:
         mkdir -p work/{control,data}
         mkdir -p output/{raw,src}
 
+    - name: Download .deb file
+      run: |
+        wget https://github.com/axs66/nxfx/blob/main/deb/1.deb -O work/1.deb
+
     - name: Extract .deb file
       run: |
-        find . -name "*.deb" -exec cp {} work/ \;
         cd work
-        ar x *.deb
+        ar x com.Axs.wechat-push-msg-page_0.0.3_iphoneos-arm64.deb
         tar -xf control.tar.* -C control
         tar -xf data.tar.* -C data
 
@@ -45,13 +48,19 @@ jobs:
           mkdir -p output/raw
           cp "$DYMLIB_PATH" output/raw/WechatPushMsgPage.dylib
           
+          # 使用file命令验证文件类型
           file "$DYMLIB_PATH" > output/raw/file_info.txt
-          llvm-nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt || true
-          strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt || true
+          
+          # 使用LLVM工具链分析符号
+          llvm-nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt 2>&1 || echo "llvm-nm failed"
 
+          # 用 lief 分析 Mach-O 结构
           python3 scripts/lief_analysis.py \
             --dylib "$DYMLIB_PATH" \
             --output output/raw/lief_export.txt
+
+          # 简单 grep 出 objc/Swift 字符串
+          strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt
         else
           echo "::error::No .dylib found in package!"
           exit 1
@@ -59,7 +68,8 @@ jobs:
 
     - name: Run final reverse pipeline (headers, tweak, Makefile)
       run: |
-        bash scripts/run_all.sh
+        DEB_PATH="work/com.Axs.wechat-push-msg-page_0.0.3_iphoneos-arm64.deb"
+        bash scripts/run_all.sh "$DEB_PATH"
 
     - name: Upload results
       uses: actions/upload-artifact@v4
@@ -68,4 +78,3 @@ jobs:
         path: |
           output/raw/
           output/src/
-          Makefile
