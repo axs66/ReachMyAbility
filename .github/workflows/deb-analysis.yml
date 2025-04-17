@@ -48,7 +48,7 @@ jobs:
           echo "No .dylib file found!" > output/symbols.txt
         fi
 
-    - name: Commit and push results
+    - name: Commit and push results using PAT
       env:
         TOKEN: ${{ secrets.PAT }}
       run: |
@@ -57,4 +57,4 @@ jobs:
         git add output/
         git commit -m "Auto extract and analyze deb content" || echo "Nothing to commit"
         git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-        git push
+        git push origin HEAD:main
