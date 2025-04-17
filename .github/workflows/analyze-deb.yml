@@ -1,10 +1,10 @@
-name: Advanced Deb Reverse Analysis
+name: Deb Reverse Analysis
 
 on:
   workflow_dispatch:
     inputs:
       deb_file:
-        description: 'Path to .deb file'
+        description: 'Path to .deb file in repo (e.g. deb/1.deb)'
         required: true
 
 permissions:
@@ -15,66 +15,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y binutils xz-utils python3 python3-pip llvm clang file
-        pip3 install lief
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg
+          pip3 install lief
 
-    - name: Setup directories
-      run: |
-        mkdir -p work/{control,data}
-        mkdir -p output/{raw,src}
+      - name: Run full analysis pipeline
+        run: |
+          bash scripts/run_all.sh "${{ github.event.inputs.deb_file }}"
 
-    - name: Download .deb file
-      run: |
-        wget https://github.com/axs66/nx/blob/main/deb/1.deb?raw=true -O work/1.deb
+      - name: Upload raw analysis artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-results
+          path: output/raw
 
-    - name: Extract .deb file
-      run: |
-        cd work
-        ar x 1.deb
-        tar -xf control.tar.* -C control
-        tar -xf data.tar.* -C data
-
-    - name: Process dylib (Mach-O compatible)
-      run: |
-        DYMLIB_PATH=$(find work/data -name "*.dylib" -print -quit)
-        if [ -f "$DYMLIB_PATH" ]; then
-          echo "Found dylib: $DYMLIB_PATH"
-          mkdir -p output/raw
-          cp "$DYMLIB_PATH" output/raw/WechatPushMsgPage.dylib
-          
-          # 使用file命令验证文件类型
-          file "$DYMLIB_PATH" > output/raw/file_info.txt
-          
-          # 使用LLVM工具链分析符号
-          llvm-nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt 2>&1 || echo "llvm-nm failed"
-
-          # 用 lief 分析 Mach-O 结构
-          python3 scripts/lief_analysis.py \
-            --dylib "$DYMLIB_PATH" \
-            --output output/raw/lief_export.txt
-
-          # 简单 grep 出 objc/Swift 字符串
-          strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt
-        else
-          echo "::error::No .dylib found in package!"
-          exit 1
-        fi
-
-    - name: Run final reverse pipeline (headers, tweak, Makefile)
-      run: |
-        DEB_PATH="work/1.deb"
-        bash scripts/run_all.sh "$DEB_PATH"
-
-    - name: Upload results
-      uses: actions/upload-artifact@v4
-      with:
-        name: reverse-analysis-results
-        path: |
-          output/raw/
-          output/src/
+      - name: Upload generated source artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: src-results
+          path: output/src
