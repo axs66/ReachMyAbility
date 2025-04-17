@@ -25,11 +25,12 @@ if [ -n "$TARGET_DYLIB" ]; then
   timeout 10s frida -n SpringBoard -l "$SCRIPT_DIR/frida_script.js" --runtime=v8 || echo "⚠️ Frida 分析失败或超时"
 else
   echo "⚠️ 未找到目标 Dylib，跳过 Frida 分析"
-fi  # 确保 'fi' 是正确关闭 if 语句
-
+fi
 
 # 生成 Hook 源码
 echo "⚙️ 正在生成 Hook 源码..."
 mkdir -p "$SRC_DIR"
-python3 scripts/generate_hooks_from_lief.py
+python3 scripts/generate_hooks_from_lief.py "$RAW_DIR/lief_output.txt" "$SRC_DIR/Tweak.xm"
+python3 scripts/generate_makefile.py "$SRC_DIR/Makefile"
+cp scripts/Plugin.h "$SRC_DIR/Plugin.h"
 echo "✅ Hook 源码已生成: $SRC_DIR"
