@@ -1,58 +1,54 @@
 import lief
-import sys
 import os
+import sys
 
 def extract_classnames(binary):
-    classnames = []
+    if not binary:
+        raise ValueError("无法加载二进制文件，binary 为 None。")
+    class_names = []
     for section in binary.sections:
-        if "__objc_classname" in section.name:
+        if section.name.startswith('__objc_classlist'):
             data = section.content
-            string = bytes(data).split(b'\x00')
-            for s in string:
-                try:
-                    decoded = s.decode("utf-8")
-                    if decoded:
-                        classnames.append(decoded)
-                except:
-                    continue
-    return classnames
+            class_names += extract_classnames_from_data(data)
+    return class_names
 
-def extract_exported_symbols(binary):
-    exports = []
-    for symbol in binary.exported_symbols:
-        exports.append(symbol.name)
-    return exports
+def extract_classnames_from_data(data):
+    class_names = []
+    # 假设数据中是以某种方式存储的类名，具体解析方式要根据具体的二进制结构决定
+    # 这里是一个占位符解析示例
+    for i in range(0, len(data), 4):
+        class_name = data[i:i+4].decode('utf-8', errors='ignore')
+        if class_name:
+            class_names.append(class_name)
+    return class_names
+
+def analyze_binary(binary_path):
+    try:
+        binary = lief.parse(binary_path)
+        if not binary:
+            raise ValueError(f"无法解析文件 {binary_path}，返回的 binary 为 None。")
+        return extract_classnames(binary)
+    except Exception as e:
+        print(f"分析文件 {binary_path} 时发生错误: {e}")
+        return []
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python3 lief_analysis.py <dylib_path>")
+    if len(sys.argv) != 2:
+        print("使用方法: python lief_analysis.py <binary_file>")
         sys.exit(1)
 
-    dylib_path = sys.argv[1]
-    output_dir = "output/raw"
-    os.makedirs(output_dir, exist_ok=True)
-
-    try:
-        binary = lief.parse(dylib_path)
-    except Exception as e:
-        print(f"❌ Failed to parse {dylib_path}: {e}")
+    binary_file = sys.argv[1]
+    if not os.path.exists(binary_file):
+        print(f"文件 {binary_file} 不存在！")
         sys.exit(1)
 
-    result = []
-    result.append(f"📦 File: {dylib_path}")
-    result.append("\n🔍 ObjC Class Names:")
-    result += extract_classnames(binary)
+    print(f"开始分析: {binary_file}")
+    class_names = analyze_binary(binary_file)
+    
+    if class_names:
+        print(f"提取到的类名: {class_names}")
+    else:
+        print("未能提取到任何类名")
 
-    result.append("\n🔍 Exported Symbols:")
-    result += extract_exported_symbols(binary)
-
-    base_name = os.path.basename(dylib_path).replace(".dylib", "")
-    output_file = os.path.join(output_dir, f"{base_name}_lief.txt")
-
-    with open(output_file, "w") as f:
-        f.write("\n".join(result))
-
-    print(f"✅ Analysis result saved to: {output_file}")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
