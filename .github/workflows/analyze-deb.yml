@@ -62,28 +62,9 @@ jobs:
           exit 1
         fi
 
-    - name: Demangle Swift symbols
+    - name: Run generate_hooks.py based on lief_export.txt
       run: |
-        python3 scripts/swift_demangle.py output/raw/objc_symbols.txt output/raw/objc_symbols_demangled.txt
-
-    - name: Generate hooks from symbols
-      run: |
-        python3 scripts/generate_hooks.py output/raw/objc_symbols_demangled.txt output/src/GeneratedHooks.xm
-
-    - name: Run analysis scripts
-      run: |
-        python3 scripts/generate_headers.py \
-          --dylib output/raw/WechatPushMsgPage.dylib \
-          --symbols output/raw/objc_symbols_demangled.txt \
-          --output output/src
-        
-        python3 scripts/generate_tweak_xm.py \
-          --strings output/raw/objc_symbols_demangled.txt \
-          --output output/src
-        
-        python3 scripts/generate_makefile.py \
-          --name WechatPushMsgPage \
-          --output output/src
+        python3 scripts/generate_hooks.py output/raw/lief_export.txt output/src/Tweak.xm
 
     - name: Upload results
       uses: actions/upload-artifact@v4
