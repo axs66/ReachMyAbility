@@ -43,12 +43,12 @@ jobs:
 
       - name: Commit generated outputs back to repo
         run: |
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add output/raw output/src
-            if ! git diff --cached --quiet; then
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/raw output/src
+          if ! git diff --cached --quiet; then
             git commit -m "chore: add reverse-analysis outputs [ci skip]"
             git push
           else
             echo "No changes to commit"
-            fi  # 确保这里有fi，正确结束if-else语句块
+          fi  # 修正了fi的位置
