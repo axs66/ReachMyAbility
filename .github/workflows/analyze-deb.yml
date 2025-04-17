@@ -8,7 +8,7 @@ on:
         required: true
 
 permissions:
-  contents: write  # 允许上传结果
+  contents: write
 
 jobs:
   analyze-deb:
@@ -16,18 +16,18 @@ jobs:
 
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v4  # 升级到最新版本
+      uses: actions/checkout@v4
 
-    - name: Install base dependencies
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y binutils xz-utils python3 python3-pip
+        sudo apt-get install -y binutils xz-utils python3 python3-pip llvm clang file
         pip3 install lief
 
     - name: Setup directories
       run: |
         mkdir -p work/{control,data}
-        mkdir -p output/{raw,src}  # 确保src目录存在
+        mkdir -p output/{raw,src}
 
     - name: Extract .deb file
       run: |
@@ -37,16 +37,23 @@ jobs:
         tar -xf control.tar.* -C control
         tar -xf data.tar.* -C data
 
-    - name: Process dylib
+    - name: Process dylib (Mach-O compatible)
       run: |
         DYMLIB_PATH=$(find work/data -name "*.dylib" -print -quit)
         if [ -f "$DYMLIB_PATH" ]; then
           echo "Found dylib: $DYMLIB_PATH"
           mkdir -p output/raw
           cp "$DYMLIB_PATH" output/raw/WechatPushMsgPage.dylib
-          nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt
-          objdump --syms "$DYMLIB_PATH" > output/raw/objdump_output.txt
-          strings "$DYMLIB_PATH" > output/raw/strings_output.txt
+          
+          # 使用file命令验证文件类型
+          file "$DYMLIB_PATH" > output/raw/file_info.txt
+          
+          # 使用LLVM工具链分析
+          llvm-nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt 2>&1 || echo "llvm-nm failed, using fallback methods..."
+          
+          # 备用分析方法
+          lief-export "$DYMLIB_PATH" > output/raw/lief_export.txt
+          strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt
         else
           echo "::error::No .dylib found in package!"
           exit 1
@@ -56,19 +63,19 @@ jobs:
       run: |
         python3 scripts/generate_headers.py \
           --dylib output/raw/WechatPushMsgPage.dylib \
-          --nm output/raw/nm_output.txt \
+          --symbols output/raw/objc_symbols.txt \
           --output output/src
         
         python3 scripts/generate_tweak_xm.py \
-          --strings output/raw/strings_output.txt \
+          --strings output/raw/objc_symbols.txt \
           --output output/src
         
         python3 scripts/generate_makefile.py \
           --name WechatPushMsgPage \
           --output output/src
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4  # 升级到最新版本
+    - name: Upload results
+      uses: actions/upload-artifact@v4
       with:
         name: reverse-analysis-results
         path: |
