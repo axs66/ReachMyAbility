@@ -11,9 +11,11 @@ binary = lief.parse(args.dylib)
 
 with open(args.output, "w") as f:
     f.write(f"Architecture: {binary.header.cpu_type.name}\n")
-    f.write("Imported Libraries:\n")
-    for lib in binary.imported_libraries:
-        f.write(f"  {lib}\n")
+
+    f.write("\nLinked Libraries:\n")
+    for command in binary.commands:
+        if isinstance(command, lief.MachO.DylibCommand):
+            f.write(f"  {command.name}\n")
 
     f.write("\nExported Functions:\n")
     for symbol in binary.exported_functions:
