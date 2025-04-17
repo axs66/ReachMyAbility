@@ -25,7 +25,8 @@ if [ -n "$TARGET_DYLIB" ]; then
   timeout 10s frida -n SpringBoard -l "$SCRIPT_DIR/frida_script.js" --runtime=v8 || echo "⚠️ Frida 分析失败或超时"
 else
   echo "⚠️ 未找到目标 Dylib，跳过 Frida 分析"
-fi
+fi  # 确保 'fi' 是正确关闭 if 语句
+
 
 # 生成 Hook 源码
 echo "⚙️ 正在生成 Hook 源码..."
