@@ -1,32 +1,42 @@
 import re
-import sys
 
-def generate_hooks(symbol_file, output_file):
-    with open(symbol_file, 'r') as infile:
-        symbols = infile.readlines()
+def parse_lief_export(lief_file):
+    symbols = []
+    with open(lief_file, 'r') as f:
+        content = f.read()
+    
+    # 假设导入库、符号、函数等信息有特定的格式
+    symbol_pattern = r"- \[([^\]]+)\]"
+    matches = re.findall(symbol_pattern, content)
+    
+    symbols = [match.strip() for match in matches]
+    return symbols
 
-    # 假设解析类名和方法名
+def generate_tweak(symbols, output_file):
     hooks = []
     for symbol in symbols:
-        # 识别类和方法
-        if re.match(r"^(.*) (.*)$", symbol.strip()):
-            class_name, method_name = symbol.strip().split(' ')
-            hook_code = f"""
+        if symbol.startswith('_OBJC_CLASS_'):
+            class_name = symbol.split('_')[-1]
+            hooks.append(f"""
 %hook {class_name}
-    {method_name} {{
-        %orig;
-        NSLog(@"Hooked method: {method_name} in class {class_name}");
-    }}
+    // Example hook for {class_name}
+    NSLog(@"Hooked class: {class_name}");
 %end
-"""
-            hooks.append(hook_code)
-
-    # 将生成的 hook 代码写入文件
-    with open(output_file, 'w') as outfile:
-        for hook in hooks:
-            outfile.write(hook)
+""")
+        elif symbol.startswith('-'):
+            method_name = symbol.split(' ')[-1]
+            hooks.append(f"""
+%hook {method_name}
+    %orig;
+    NSLog(@"Hooked method: {method_name}");
+%end
+""")
+    
+    with open(output_file, 'w') as f:
+        f.writelines(hooks)
 
 if __name__ == '__main__':
-    symbol_file = sys.argv[1]
-    output_file = sys.argv[2]
-    generate_hooks(symbol_file, output_file)
+    lief_file = 'output/raw/lief_export.txt'
+    output_file = 'output/src/Tweak.xm'
+    symbols = parse_lief_export(lief_file)
+    generate_tweak(symbols, output_file)
