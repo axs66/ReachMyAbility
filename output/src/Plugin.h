@@ -1,9 +1,6 @@
-// Auto-generated header
-#import <Foundation/Foundation.h>
+#ifndef PLUGIN_H
+#define PLUGIN_H
 
-@interface OS_dispatch_queue : NSObject
-@end
+// 插件相关声明，可根据实际情况扩展
 
-@interface _TtCs12_SwiftObject : NSObject
-@end
-
+#endif /* PLUGIN_H */
