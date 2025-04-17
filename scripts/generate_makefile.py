@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
-import argparse
 import os
+import argparse
 
-THEOS_TEMPLATE = """ARCHS = arm64
+parser = argparse.ArgumentParser(description="生成 Makefile")
+parser.add_argument('--name', required=True, help="Tweak 名称，如 Plugin")
+parser.add_argument('--output', required=True, help="输出目录 (e.g. output/src)")
+args = parser.parse_args()
+
+content = f"""ARCHS = arm64
 TARGET = iphone:latest:13.0
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = {name}
+TWEAK_NAME = {args.name}
 
-{name}_FILES = Tweak.xm
-{name}_CFLAGS = -fobjc-arc
+{args.name}_FILES = Tweak.xm
+{args.name}_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 """
 
-def generate_makefile(name, output_path):
-    os.makedirs(output_path, exist_ok=True)
-    with open(os.path.join(output_path, "Makefile"), 'w') as f:
-        f.write(THEOS_TEMPLATE.format(name=name))
+os.makedirs(args.output, exist_ok=True)
+makefile_path = os.path.join(args.output, "Makefile")
+with open(makefile_path, 'w') as f:
+    f.write(content)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--name', required=True)
-    parser.add_argument('--output', required=True)
-    args = parser.parse_args()
-    
-    generate_makefile(args.name, args.output)
+print("✅ Makefile 已生成:", makefile_path)
