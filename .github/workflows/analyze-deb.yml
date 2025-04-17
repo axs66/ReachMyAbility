@@ -51,8 +51,11 @@ jobs:
           # 使用LLVM工具链分析
           llvm-nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt 2>&1 || echo "llvm-nm failed, using fallback methods..."
           
-          # 备用分析方法
-          lief-export "$DYMLIB_PATH" > output/raw/lief_export.txt
+          # Python 脚本替代 lief-export
+          python3 scripts/lief_analysis.py \
+            --dylib "$DYMLIB_PATH" \
+            --output output/raw/lief_export.txt
+
           strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt
         else
           echo "::error::No .dylib found in package!"
