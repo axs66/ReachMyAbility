@@ -26,22 +26,27 @@ jobs:
         tar -xf control.tar.* -C control
         tar -xf data.tar.* -C data
 
-    - name: Extract Objective-C symbols from .dylib
+    - name: Prepare output folders
+      run: |
+        mkdir -p output/control
+        mkdir -p output/data
+        mkdir -p output/raw
+
+    - name: Copy extracted files
+      run: |
+        cp -r work/control/* output/control/ || true
+        cp -r work/data/* output/data/ || true
+
+    - name: Upload raw .dylib for local analysis
       run: |
         dylib=$(find work/data -name "*.dylib" | head -n 1)
         if [ -f "$dylib" ]; then
           echo "Found dylib: $dylib"
-          nm -j "$dylib" | grep -E "_OBJC_|_objc_|MetaClass" > ../output/symbols.txt
+          cp "$dylib" output/raw/WechatPushMsgPage.dylib
+          echo "Symbol extraction skipped (Mach-O ARM64 not supported on Linux)." > output/symbols.txt
         else
-          echo "No .dylib file found!" > ../output/symbols.txt
+          echo "No .dylib file found!" > output/symbols.txt
         fi
-
-    - name: Copy extracted files
-      run: |
-        mkdir -p output/control
-        mkdir -p output/data
-        cp -r work/control/* output/control/ || true
-        cp -r work/data/* output/data/ || true
 
     - name: Commit and push results
       run: |
