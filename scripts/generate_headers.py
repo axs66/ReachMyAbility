@@ -25,7 +25,7 @@ def parse_symbols(symbol_file):
     return classes, methods
 
 def generate_header(classes, methods, output_path):
-    os.makedirs(output_path, exist_ok=True)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(os.path.join(output_path, "WechatPushMsgPage.h"), 'w') as f:
         f.write("// Auto-generated header (Mach-O compatible)\n\n")
         f.write("#import <Foundation/Foundation.h>\n\n")
