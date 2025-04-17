@@ -1,0 +1,72 @@
+name: Advanced Deb Reverse Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      deb_file:
+        description: 'Path to .deb file'
+        required: true
+
+jobs:
+  analyze-deb:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Install base dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y binutils xz-utils python3 python3-pip
+        pip3 install lief
+
+    - name: Setup working directories
+      run: |
+        mkdir -p work/{control,data}
+        mkdir -p output/{raw,src}
+
+    - name: Extract .deb file
+      run: |
+        find . -name "*.deb" -exec cp {} work/ \;
+        cd work
+        ar x *.deb
+        tar -xf control.tar.* -C control
+        tar -xf data.tar.* -C data
+
+    - name: Locate and process dylib
+      run: |
+        DYMLIB_PATH=$(find work/data -name "*.dylib" -print -quit)
+        if [ -f "$DYMLIB_PATH" ]; then
+          echo "Found dylib: $DYMLIB_PATH"
+          cp "$DYMLIB_PATH" output/raw/WechatPushMsgPage.dylib
+          nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt
+          objdump --syms "$DYMLIB_PATH" > output/raw/objdump_output.txt
+          strings "$DYMLIB_PATH" > output/raw/strings_output.txt
+        else
+          echo "::error::No .dylib found in package!"
+          exit 1
+        fi
+
+    - name: Run analysis scripts
+      run: |
+        python3 scripts/generate_headers.py \
+          --dylib output/raw/WechatPushMsgPage.dylib \
+          --nm output/raw/nm_output.txt \
+          --output output/src
+        
+        python3 scripts/generate_tweak_xm.py \
+          --strings output/raw/strings_output.txt \
+          --output output/src
+        
+        python3 scripts/generate_makefile.py \
+          --name WechatPushMsgPage \
+          --output output/src
+
+    - name: Archive results
+      uses: actions/upload-artifact@v3
+      with:
+        name: reverse-analysis-results
+        path: |
+          output/raw/*
+          output/src/*
