@@ -8,7 +8,7 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: write  # 允许提交回仓库
 
 jobs:
   analyze-deb:
@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true  # 保留写入令牌，便于后续 push
 
       - name: Install dependencies
         run: |
@@ -32,10 +34,26 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raw-results
-          path: output/raw
+          path: output/raw  # 上传 output/raw 目录作为工件 :contentReference[oaicite:0]{index=0}
 
       - name: Upload generated source artifacts
         uses: actions/upload-artifact@v4
         with:
           name: src-results
-          path: output/src
+          path: output/src  # 上传 output/src 目录作为工件 :contentReference[oaicite:1]{index=1}
+
+      - name: Commit generated outputs back to repo
+        run: |
+          # 配置 git 用户信息
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # 将新增/修改的 output 目录纳入版本控制
+          git add output/raw output/src
+          # 仅当有改动时才提交
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: add reverse-analysis outputs [ci skip]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+        # 这一步使用 Git CLI 在流程中提交并推送改动回主分支 :contentReference[oaicite:2]{index=2}
