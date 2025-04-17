@@ -1,42 +1,40 @@
+#!/usr/bin/env python3
+import os
 import re
+import argparse
 
-def parse_lief_export(lief_file):
-    symbols = []
-    with open(lief_file, 'r') as f:
-        content = f.read()
-    
-    # 假设导入库、符号、函数等信息有特定的格式
-    symbol_pattern = r"- \[([^\]]+)\]"
-    matches = re.findall(symbol_pattern, content)
-    
-    symbols = [match.strip() for match in matches]
-    return symbols
+parser = argparse.ArgumentParser(description="根据 LIEF & objc 符号生成 Tweak.xm")
+parser.add_argument('--lief', required=True, help="Path to lief_export.txt")
+parser.add_argument('--objc', required=True, help="Path to objc_symbols.txt")
+parser.add_argument('--output', required=True, help="Output Tweak.xm path")
+args = parser.parse_args()
 
-def generate_tweak(symbols, output_file):
-    hooks = []
-    for symbol in symbols:
-        if symbol.startswith('_OBJC_CLASS_'):
-            class_name = symbol.split('_')[-1]
-            hooks.append(f"""
-%hook {class_name}
-    // Example hook for {class_name}
-    NSLog(@"Hooked class: {class_name}");
-%end
-""")
-        elif symbol.startswith('-'):
-            method_name = symbol.split(' ')[-1]
-            hooks.append(f"""
-%hook {method_name}
-    %orig;
-    NSLog(@"Hooked method: {method_name}");
-%end
-""")
-    
-    with open(output_file, 'w') as f:
-        f.writelines(hooks)
+symbols = set()
 
-if __name__ == '__main__':
-    lief_file = 'output/raw/lief_export.txt'
-    output_file = 'output/src/Tweak.xm'
-    symbols = parse_lief_export(lief_file)
-    generate_tweak(symbols, output_file)
+# 从 LIEF 导出中提取函数名
+with open(args.lief, 'r') as f:
+    for line in f:
+        m = re.match(r'\s+(\S+)', line)
+        if m:
+            symbols.add(m.group(1))
+
+# 从 objc 符号中提取类名和方法
+with open(args.objc, 'r') as f:
+    for line in f:
+        text = line.strip()
+        if '_OBJC_CLASS_$_' in text:
+            symbols.add(text.split('_OBJC_CLASS_$_')[-1])
+        elif text.startswith('-['):
+            symbols.add(text)
+
+os.makedirs(os.path.dirname(args.output), exist_ok=True)
+
+with open(args.output, 'w') as f:
+    f.write("// Auto-generated Tweak.xm\n\n")
+    for sym in sorted(symbols):
+        f.write(f"%hook {sym}\n")
+        f.write("    %orig;\n")
+        f.write(f"    NSLog(@\"[Tweak] Hooked {sym}\");\n")
+        f.write("%end\n\n")
+
+print("✅ Tweak.xm 生成:", args.output)
