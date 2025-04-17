@@ -21,6 +21,18 @@ jobs:
         with:
           persist-credentials: true  # 保留写入令牌，便于后续 push
 
+      - name: Set up Homebrew with caching and USTC mirrors
+        uses: Homebrew/actions/setup-homebrew@master
+        with:
+          cache: true
+        run: |
+          # 配置中科大镜像源
+          echo 'export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"' >> ~/.zshrc
+          echo 'export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/homebrew-core.git"' >> ~/.zshrc
+          echo 'export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"' >> ~/.zshrc
+          echo 'export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"' >> ~/.zshrc
+          source ~/.zshrc
+
       - name: Install dependencies
         run: |
           brew update
@@ -35,13 +47,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raw-results
-          path: output/raw
+          path: output/raw  # 上传 output/raw 目录作为工件
 
       - name: Upload generated source artifacts
         uses: actions/upload-artifact@v4
         with:
           name: src-results
-          path: output/src
+          path: output/src  # 上传 output/src 目录作为工件
 
       - name: Commit generated outputs back to repo
         run: |
@@ -56,3 +68,5 @@ jobs:
             git push
           else
             echo "No changes to commit"
+          fi
+        # 这一步使用 Git CLI 在流程中提交并推送改动回主分支
