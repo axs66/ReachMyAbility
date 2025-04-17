@@ -43,4 +43,6 @@ python3 scripts/generate_hooks_from_lief.py "$RAW_DIR/lief_output.txt" "$SRC_DIR
 python3 scripts/generate_makefile.py "$SRC_DIR/Makefile"
 # 生成 Plugin.h
 python3 scripts/generate_plugin_h.py "$SRC_DIR/Plugin.h"
+# 生成 Plugin.m
+python3 scripts/generate_plugin_m.py "$SRC_DIR/Plugin.m"
 echo "✅ Hook 源码已生成: $SRC_DIR"
