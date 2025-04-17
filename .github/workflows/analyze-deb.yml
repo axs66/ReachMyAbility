@@ -27,10 +27,12 @@ jobs:
           sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg wget
           pip3 install lief
 
-      - name: Install jtool
+      - name: Install jtool from source
         run: |
-          wget https://github.com/Imposter/jtool/releases/download/v2.0.0/jtool-linux-x86_64.tar.gz
-          tar -xvzf jtool-linux-x86_64.tar.gz
+          # 下载并解压 jtool 源码
+          git clone https://github.com/Imposter/jtool.git
+          cd jtool
+          make
           sudo mv jtool /usr/local/bin/
 
       - name: Run full analysis pipeline
