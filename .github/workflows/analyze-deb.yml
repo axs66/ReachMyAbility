@@ -31,12 +31,12 @@ jobs:
 
     - name: Download .deb file
       run: |
-        wget https://github.com/axs66/nx/blob/main/deb/1.deb -O work/1.deb
+        wget https://github.com/axs66/nx/blob/main/deb/1.deb?raw=true -O work/1.deb
 
     - name: Extract .deb file
       run: |
         cd work
-        ar x com.Axs.wechat-push-msg-page_0.0.3_iphoneos-arm64.deb
+        ar x 1.deb
         tar -xf control.tar.* -C control
         tar -xf data.tar.* -C data
 
@@ -68,7 +68,7 @@ jobs:
 
     - name: Run final reverse pipeline (headers, tweak, Makefile)
       run: |
-        DEB_PATH="work/com.Axs.wechat-push-msg-page_0.0.3_iphoneos-arm64.deb"
+        DEB_PATH="work/1.deb"
         bash scripts/run_all.sh "$DEB_PATH"
 
     - name: Upload results
