@@ -1,0 +1,13 @@
+Package: com.Axs.wechat-push-msg-page
+Name: 微信消息直达
+Description: 弥补微信通知不足，支持点击微信消息通知横幅，跳转到对应的窗口。
+Maintainer: Axs
+Author: be-huge
+Section: 微信插件
+Depends: dev.theos.orion (>= 1.0.0), firmware (>= 12.2)
+Architecture: iphoneos-arm64
+Version: 0.0.3
+Installed-Size: 232
+Icon: https://axs66.github.io/repo/icon/wechat.png
+Sileodepiction: https://axs66.github.io/repo/sileodepiction/wechat-push-msg-page/js.json
+
