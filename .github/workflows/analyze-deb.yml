@@ -1,4 +1,4 @@
-name: Advanced Deb Reverse Analysis 
+name: Advanced Deb Reverse Analysis
 
 on:
   workflow_dispatch:
@@ -57,25 +57,28 @@ jobs:
             --output output/raw/lief_export.txt
 
           strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt
-
-    - name: Demangle Swift symbols
-      run: |
-        python3 scripts/swift_demangle.py output/raw/objc_symbols.txt output/raw/objc_symbols_demangled.txt
-
         else
           echo "::error::No .dylib found in package!"
           exit 1
         fi
 
+    - name: Demangle Swift symbols
+      run: |
+        python3 scripts/swift_demangle.py output/raw/objc_symbols.txt output/raw/objc_symbols_demangled.txt
+
+    - name: Generate hooks from symbols
+      run: |
+        python3 scripts/generate_hooks.py output/raw/objc_symbols_demangled.txt output/src/GeneratedHooks.xm
+
     - name: Run analysis scripts
       run: |
         python3 scripts/generate_headers.py \
           --dylib output/raw/WechatPushMsgPage.dylib \
-          --symbols output/raw/objc_symbols.txt \
+          --symbols output/raw/objc_symbols_demangled.txt \
           --output output/src
         
         python3 scripts/generate_tweak_xm.py \
-          --strings output/raw/objc_symbols.txt \
+          --strings output/raw/objc_symbols_demangled.txt \
           --output output/src
         
         python3 scripts/generate_makefile.py \
@@ -89,13 +92,3 @@ jobs:
         path: |
           output/raw/
           output/src/
-
-    - name: Commit reverse analysis output to repository
-      if: success()
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-        git add output/raw output/src
-        git commit -m "Add reverse-analysis output: raw + src" || echo "No changes to commit"
-        git push
