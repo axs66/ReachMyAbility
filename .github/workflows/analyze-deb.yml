@@ -9,7 +9,7 @@ on:
         default: 'deb/1.deb'
 
 permissions:
-  contents: write  # 允许提交回仓库
+  contents: write
 
 jobs:
   analyze-deb:
@@ -18,54 +18,36 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true  # 保留写入令牌，便于后续 push
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip git wget clang
-          pip3 install frida-tools
+          sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg frida-tools
+          pip3 install lief
 
-      - name: Download and analyze the .deb file
+      - name: Run full analysis pipeline
         run: |
-          # 提取 .deb 文件
-          mkdir -p work
-          dpkg-deb -x "${{ github.event.inputs.deb_file }}" work
-          dpkg-deb -e "${{ github.event.inputs.deb_file }}" work/DEBIAN
-
-          # 提取 dylib 文件路径
-          find work -type f -name "*.dylib" > dylibs.txt
-
-          # 使用 frida 进行动态分析 (假设你已经有了针对目标 dylib 的脚本)
-          for dylib in $(cat dylibs.txt); do
-            echo "Running frida analysis on: $dylib"
-            frida -U -f /path/to/your/target_app -l frida_script.js --no-pause
-          done
+          bash scripts/run_all.sh "${{ github.event.inputs.deb_file }}"
 
       - name: Upload raw analysis artifacts
         uses: actions/upload-artifact@v4
         with:
           name: raw-results
-          path: output/raw  # 上传 output/raw 目录作为工件
+          path: output/raw
 
       - name: Upload generated source artifacts
         uses: actions/upload-artifact@v4
         with:
           name: src-results
-          path: output/src  # 上传 output/src 目录作为工件
+          path: output/src
 
       - name: Commit generated outputs back to repo
         run: |
-          # 配置 git 用户信息
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # 将新增/修改的 output 目录纳入版本控制
           git add output/raw output/src
-          # 仅当有改动时才提交
           if ! git diff --cached --quiet; then
             git commit -m "chore: add reverse-analysis outputs [ci skip]"
             git push
           else
             echo "No changes to commit"
-          fi
