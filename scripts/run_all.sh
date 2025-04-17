@@ -18,7 +18,7 @@ python3 scripts/lief_analysis.py "$WORK_DIR" > "$RAW_DIR/lief_output.txt"
 echo "✅ Dylib 深度分析完成，结果在: $RAW_DIR"
 
 # 自动查找 Dylib 并使用 Frida 分析
-TARGET_DYLIB=$(find "$RAW_DIR" -name "*.dylib" | head -n 1)
+TARGET_DYLIB=$(find "$WORK_DIR" -name "*.dylib" | head -n 1)
 if [ -n "$TARGET_DYLIB" ]; then
   echo "🎯 自动识别到目标 Dylib: $TARGET_DYLIB"
   echo "🚀 启动 Frida 分析（自动 attach）..."
@@ -30,9 +30,7 @@ fi
 # 生成 Hook 源码
 echo "⚙️ 正在生成 Hook 源码..."
 mkdir -p "$SRC_DIR"
-python3 scripts/generate_hooks_from_lief.py
+python3 scripts/generate_hooks_from_lief.py "$RAW_DIR/lief_output.txt" "$SRC_DIR/Tweak.xm"
+python3 scripts/generate_makefile.py "$SRC_DIR/Makefile"
+python3 scripts/generate_plugin_h.py "$SRC_DIR/Plugin.h"
 echo "✅ Hook 源码已生成: $SRC_DIR"
-
-# 复制 Plugin.h 文件
-cp "$SRC_DIR/Plugin.h" "$SRC_DIR/Plugin.h"
-echo "✅ Plugin.h 文件已复制"
