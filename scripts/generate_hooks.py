@@ -13,10 +13,10 @@ def generate_hooks(symbol_file, output_file):
             class_name, method_name = symbol.strip().split(' ')
             hook_code = f"""
 %hook {class_name}
-    {method_name} {
+    {method_name} {{
         %orig;
         NSLog(@"Hooked method: {method_name} in class {class_name}");
-    }
+    }}
 %end
 """
             hooks.append(hook_code)
