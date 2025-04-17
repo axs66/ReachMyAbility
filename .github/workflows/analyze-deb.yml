@@ -24,17 +24,24 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg wget
+          sudo apt-get install -y python3-pip git wget clang
+          pip3 install frida-tools
 
-      - name: Install jtool precompiled release
+      - name: Download and analyze the .deb file
         run: |
-          wget https://github.com/Imposter/jtool/releases/download/v2.0.0/jtool-linux-x86_64.tar.gz
-          tar -xvzf jtool-linux-x86_64.tar.gz
-          sudo mv jtool /usr/local/bin/
+          # 提取 .deb 文件
+          mkdir -p work
+          dpkg-deb -x "${{ github.event.inputs.deb_file }}" work
+          dpkg-deb -e "${{ github.event.inputs.deb_file }}" work/DEBIAN
 
-      - name: Run full analysis pipeline
-        run: |
-          bash scripts/run_all.sh "${{ github.event.inputs.deb_file }}"
+          # 提取 dylib 文件路径
+          find work -type f -name "*.dylib" > dylibs.txt
+
+          # 使用 frida 进行动态分析 (假设你已经有了针对目标 dylib 的脚本)
+          for dylib in $(cat dylibs.txt); do
+            echo "Running frida analysis on: $dylib"
+            frida -U -f /path/to/your/target_app -l frida_script.js --no-pause
+          done
 
       - name: Upload raw analysis artifacts
         uses: actions/upload-artifact@v4
