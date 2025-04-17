@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 DEB_FILE=$1
