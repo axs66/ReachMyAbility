@@ -1,27 +1,36 @@
 #!/bin/bash
+set -e
 
-# 获取 deb 文件路径（来自 GitHub Actions 传递的参数）
-DEB_FILE=$1
+DEB_PATH="$1"
+WORK_DIR="work"
+RAW_DIR="output/raw"
+SRC_DIR="output/src"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# 解包 .deb 文件
 echo "🎯 开始解包 .deb..."
-dpkg-deb -x "$DEB_FILE" work
+rm -rf "$WORK_DIR" && mkdir -p "$WORK_DIR"
+dpkg-deb -x "$DEB_PATH" "$WORK_DIR"
+echo "✅ .deb 提取完成：$WORK_DIR"
 
-# 分析 dylib 文件
 echo "🔍 分析 dylib..."
-# 假设 dylib 文件位于解包目录中的某个位置
-DYLIB_PATH="work/usr/lib/your_target.dylib"
+mkdir -p "$RAW_DIR"
+python3 scripts/lief_analysis.py "$WORK_DIR" > "$RAW_DIR/lief_output.txt"
+echo "✅ Dylib 深度分析完成，结果在: $RAW_DIR"
 
-# 使用 Frida 进行动态分析
-echo "📑 使用 Frida 执行脚本..."
-frida -U -f "$DYLIB_PATH" -l scripts/frida_script.js --no-pause
+# 自动查找 Dylib 并使用 Frida 分析
+TARGET_DYLIB=$(find "$WORK_DIR" -name "*.dylib" | head -n 1)
+if [ -n "$TARGET_DYLIB" ]; then
+  echo "🎯 自动识别到目标 Dylib: $TARGET_DYLIB"
+  echo "🚀 启动 Frida 分析（自动 attach）..."
+  timeout 10s frida -n SpringBoard -l "$SCRIPT_DIR/frida_script.js" --runtime=v8
+else
+  echo "⚠️ 未找到目标 Dylib，跳过 Frida 分析"
+fi
 
-# 将分析结果保存到 output/raw 目录
-echo "✅ Dylib 深度分析完成，结果在: output/raw"
-
-# 提取 ObjC 类名／方法等其他操作
-echo "📑 提取 ObjC 类名／方法..."
-python3 scripts/lief_analysis.py "$DYLIB_PATH"
-
-# 将分析结果保存到 output/src 目录
-echo "✅ 分析结果已保存至 output/src"
+# 生成 Hook 源码
+echo "⚙️ 正在生成 Hook 源码..."
+mkdir -p "$SRC_DIR"
+python3 scripts/generate_hooks_from_lief.py "$RAW_DIR/lief_output.txt" "$SRC_DIR/Tweak.xm"
+python3 scripts/generate_makefile.py "$SRC_DIR/Makefile"
+cp scripts/Plugin.h "$SRC_DIR/Plugin.h"
+echo "✅ Hook 源码已生成: $SRC_DIR"
