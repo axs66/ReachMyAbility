@@ -1,1 +1,0 @@
-Symbol extraction skipped (Mach-O ARM64 not supported on Linux).
