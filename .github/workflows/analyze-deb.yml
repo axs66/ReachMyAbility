@@ -45,19 +45,13 @@ jobs:
           mkdir -p output/raw
           cp "$DYMLIB_PATH" output/raw/WechatPushMsgPage.dylib
           
-          # 使用file命令验证文件类型
           file "$DYMLIB_PATH" > output/raw/file_info.txt
-          
-          # 使用LLVM工具链分析符号
-          llvm-nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt 2>&1 || echo "llvm-nm failed"
+          llvm-nm --demangle "$DYMLIB_PATH" > output/raw/nm_output.txt || true
+          strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt || true
 
-          # 用 lief 分析 Mach-O 结构
           python3 scripts/lief_analysis.py \
             --dylib "$DYMLIB_PATH" \
             --output output/raw/lief_export.txt
-
-          # 简单 grep 出 objc/Swift 字符串
-          strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt
         else
           echo "::error::No .dylib found in package!"
           exit 1
@@ -74,3 +68,4 @@ jobs:
         path: |
           output/raw/
           output/src/
+          Makefile
