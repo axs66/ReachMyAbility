@@ -31,7 +31,7 @@ jobs:
 
     - name: Download .deb file
       run: |
-        wget https://github.com/axs66/nxfx/blob/main/deb/1.deb -O work/1.deb
+        wget https://github.com/axs66/nx/blob/main/deb/1.deb -O work/1.deb
 
     - name: Extract .deb file
       run: |
