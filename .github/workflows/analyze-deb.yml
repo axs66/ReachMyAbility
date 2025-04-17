@@ -30,8 +30,8 @@ jobs:
       - name: Install jtool from source
         run: |
           # 下载并解压 jtool 源码
-          git clone https://github.com/Imposter/jtool.git
-          cd jtool
+          git clone https://github.com/PMAT/mtps-juicy-strings.git
+          cd mtps-juicy-strings
           make
           sudo mv jtool /usr/local/bin/
 
