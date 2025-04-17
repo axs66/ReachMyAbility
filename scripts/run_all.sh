@@ -1,23 +1,26 @@
 #!/bin/bash
+
 set -e
 
-RAW_DIR="output/raw"
-SRC_DIR="output/src"
+DEB_FILE=$1
 
-mkdir -p "$SRC_DIR"
+if [ -z "$DEB_FILE" ]; then
+  echo "❗ 使用方法: ./run_all.sh path/to/your.deb"
+  exit 1
+fi
 
-# 1. 生成 Tweak.xm
-python3 scripts/generate_hooks_from_lief.py \
-    "$RAW_DIR/lief_export.txt" \
-    "$SRC_DIR/Tweak.xm"
+echo "🎯 解包 .deb..."
+bash scripts/extract_deb.sh "$DEB_FILE"
 
-# 2. 生成头文件（带参数）
+echo "🔍 分析 WeChat 二进制..."
+python3 scripts/analyze_deb.py
+
+echo "⚙️ 生成代码..."
+python3 scripts/generate_hooks.py output/raw/objc_symbols.txt output/src/Tweak.xm
+python3 scripts/generate_makefile.py --name WechatPushMsgPage --output Makefile
 python3 scripts/generate_headers.py \
-    --dylib "$RAW_DIR/WechatPushMsgPage.dylib" \
-    --symbols "$RAW_DIR/objc_symbols.txt" \
-    --output "$SRC_DIR/WechatPushMsgPage.h"
+  --dylib output/raw/WechatPushMsgPage.dylib \
+  --symbols output/raw/objc_symbols.txt \
+  --output output/src/WechatPushMsgPage.h
 
-# 3. 生成 Makefile
-python3 scripts/generate_makefile.py \
-    "$RAW_DIR/objc_symbols.txt" \
-    "$SRC_DIR/Makefile"
+echo "✅ 全部完成！请检查 output/src 和 Makefile"
