@@ -24,8 +24,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg
+          sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg wget
           pip3 install lief
+
+      - name: Install jtool
+        run: |
+          wget https://github.com/Imposter/jtool/releases/download/v2.0.0/jtool-linux-x86_64.tar.gz
+          tar -xvzf jtool-linux-x86_64.tar.gz
+          sudo mv jtool /usr/local/bin/
 
       - name: Run full analysis pipeline
         run: |
@@ -35,13 +41,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raw-results
-          path: output/raw  # 上传 output/raw 目录作为工件 :contentReference[oaicite:0]{index=0}
+          path: output/raw  # 上传 output/raw 目录作为工件
 
       - name: Upload generated source artifacts
         uses: actions/upload-artifact@v4
         with:
           name: src-results
-          path: output/src  # 上传 output/src 目录作为工件 :contentReference[oaicite:1]{index=1}
+          path: output/src  # 上传 output/src 目录作为工件
 
       - name: Commit generated outputs back to repo
         run: |
@@ -57,4 +63,3 @@ jobs:
           else
             echo "No changes to commit"
           fi
-        # 这一步使用 Git CLI 在流程中提交并推送改动回主分支 :contentReference[oaicite:2]{index=2}
