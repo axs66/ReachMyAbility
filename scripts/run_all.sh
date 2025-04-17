@@ -1,25 +1,27 @@
 #!/bin/bash
 
+# 获取 deb 文件路径（来自 GitHub Actions 传递的参数）
 DEB_FILE=$1
-WORK_DIR="work"
 
-# 1. 解包 .deb 文件
+# 解包 .deb 文件
 echo "🎯 开始解包 .deb..."
-dpkg-deb -x "$DEB_FILE" "$WORK_DIR"
-dpkg-deb -e "$DEB_FILE" "$WORK_DIR/DEBIAN"
-echo "✅ .deb 提取完成：$WORK_DIR"
+dpkg-deb -x "$DEB_FILE" work
 
-# 2. 提取 dylib 文件路径
-echo "🔍 提取 dylib 文件路径..."
-find "$WORK_DIR" -type f -name "*.dylib" > dylibs.txt
-echo "✅ dylib 文件路径提取完成"
+# 分析 dylib 文件
+echo "🔍 分析 dylib..."
+# 假设 dylib 文件位于解包目录中的某个位置
+DYLIB_PATH="work/usr/lib/your_target.dylib"
 
-# 3. 使用 frida 动态分析 dylib
-echo "📑 使用 frida 动态分析 dylib 文件..."
-while IFS= read -r dylib; do
-    echo "🔍 分析 dylib: $dylib"
-    # 假设你有一个 `frida_script.js` 脚本，执行动态分析
-    frida -U -f /path/to/target_app -l frida_script.js --no-pause
-done < dylibs.txt
+# 使用 Frida 进行动态分析
+echo "📑 使用 Frida 执行脚本..."
+frida -U -f "$DYLIB_PATH" -l scripts/frida_script.js --no-pause
 
-echo "✅ Dylib 动态分析完成"
+# 将分析结果保存到 output/raw 目录
+echo "✅ Dylib 深度分析完成，结果在: output/raw"
+
+# 提取 ObjC 类名／方法等其他操作
+echo "📑 提取 ObjC 类名／方法..."
+python3 scripts/lief_analysis.py "$DYLIB_PATH"
+
+# 将分析结果保存到 output/src 目录
+echo "✅ 分析结果已保存至 output/src"
