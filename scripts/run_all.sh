@@ -1,12 +1,3 @@
-#!/bin/bash
-set -e
-
-DEB_PATH="$1"
-WORK_DIR="work"
-RAW_DIR="output/raw"
-SRC_DIR="output/src"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 echo "🎯 开始解包 .deb..."
 rm -rf "$WORK_DIR" && mkdir -p "$WORK_DIR"
 dpkg-deb -x "$DEB_PATH" "$WORK_DIR"
@@ -19,6 +10,8 @@ echo "✅ Dylib 深度分析完成，结果在: $RAW_DIR"
 
 # 自动查找 Dylib 并使用 Frida 分析
 TARGET_DYLIB=$(find "$WORK_DIR" -name "*.dylib" | head -n 1)
+echo "找到的 dylib：$TARGET_DYLIB"
+
 if [ -n "$TARGET_DYLIB" ]; then
   echo "🎯 自动识别到目标 Dylib: $TARGET_DYLIB"
   echo "🚀 启动 Frida 分析（自动 attach）..."
