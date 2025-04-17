@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg frida-tools
-          pip3 install lief
+          sudo apt-get install -y binutils dpkg-dev xz-utils python3 python3-pip llvm clang file dpkg
+          pip3 install lief frida-tools
 
       - name: Run full analysis pipeline
         run: |
