@@ -57,6 +57,11 @@ jobs:
             --output output/raw/lief_export.txt
 
           strings "$DYMLIB_PATH" | grep -E 'OBJC_CLASS|_TTS|_OBJC_' > output/raw/objc_symbols.txt
+
+    - name: Demangle Swift symbols
+      run: |
+        python3 scripts/swift_demangle.py output/raw/objc_symbols.txt output/raw/objc_symbols_demangled.txt
+
         else
           echo "::error::No .dylib found in package!"
           exit 1
