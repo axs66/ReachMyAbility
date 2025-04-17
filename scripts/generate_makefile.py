@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import os
 
 THEOS_TEMPLATE = """ARCHS = arm64
 TARGET = iphone:latest:13.0
@@ -15,7 +16,8 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 """
 
 def generate_makefile(name, output_path):
-    with open(f"{output_path}/Makefile", 'w') as f:
+    os.makedirs(output_path, exist_ok=True)
+    with open(os.path.join(output_path, "Makefile"), 'w') as f:
         f.write(THEOS_TEMPLATE.format(name=name))
 
 if __name__ == "__main__":
