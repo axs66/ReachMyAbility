@@ -1,0 +1,52 @@
+name: deb reverse analysis
+
+on:
+  workflow_dispatch:
+
+jobs:
+  analyze-deb:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Install required tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y binutils xz-utils
+
+    - name: Extract .deb file
+      run: |
+        mkdir -p work
+        cp input/*.deb work/
+        cd work
+        ar x *.deb
+        mkdir -p control data
+        tar -xf control.tar.* -C control
+        tar -xf data.tar.* -C data
+
+    - name: Extract Objective-C symbols from .dylib
+      run: |
+        dylib=$(find work/data -name "*.dylib" | head -n 1)
+        if [ -f "$dylib" ]; then
+          echo "Found dylib: $dylib"
+          nm -j "$dylib" | grep -E "_OBJC_|_objc_|MetaClass" > ../output/symbols.txt
+        else
+          echo "No .dylib file found!" > ../output/symbols.txt
+        fi
+
+    - name: Copy extracted files
+      run: |
+        mkdir -p output/control
+        mkdir -p output/data
+        cp -r work/control/* output/control/ || true
+        cp -r work/data/* output/data/ || true
+
+    - name: Commit and push results
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "actions@github.com"
+        git add output/
+        git commit -m "Auto extract and analyze deb content"
+        git push
