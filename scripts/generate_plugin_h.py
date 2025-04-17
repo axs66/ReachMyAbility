@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
 
+# 输入参数为 .deb 文件路径
 DEB_PATH="$1"
+
+# 项目相关目录
 WORK_DIR="work"
 RAW_DIR="output/raw"
 SRC_DIR="output/src"
@@ -17,8 +20,8 @@ mkdir -p "$RAW_DIR"
 python3 scripts/lief_analysis.py "$WORK_DIR" > "$RAW_DIR/lief_output.txt"
 echo "✅ Dylib 深度分析完成，结果在: $RAW_DIR"
 
-# 自动查找 Dylib 并使用 Frida 分析
-TARGET_DYLIB=$(find "$RAW_DIR" -name "*.dylib" | head -n 1)
+# 自动查找 dylib（注意：应在 work/ 下查找）
+TARGET_DYLIB=$(find "$WORK_DIR" -name "*.dylib" | head -n 1)
 if [ -n "$TARGET_DYLIB" ]; then
   echo "🎯 自动识别到目标 Dylib: $TARGET_DYLIB"
   echo "🚀 启动 Frida 分析（自动 attach）..."
@@ -27,13 +30,16 @@ else
   echo "⚠️ 未找到目标 Dylib，跳过 Frida 分析"
 fi
 
-# 生成 Hook 源码
 echo "⚙️ 正在生成 Hook 源码..."
 mkdir -p "$SRC_DIR"
+
+# 分析文本生成 Tweak.xm
 python3 scripts/generate_hooks_from_lief.py "$RAW_DIR/lief_output.txt" "$SRC_DIR/Tweak.xm"
+
+# 自动生成 Makefile
 python3 scripts/generate_makefile.py "$SRC_DIR/Makefile"
 
-# 确保通过脚本生成 Plugin.h
-python3 scripts/generate_plugin_h.py "$SRC_DIR/Plugin.h"  # 修改为实际生成 Plugin.h 的脚本
+# 自动生成 Plugin.h
+python3 scripts/generate_plugin_h.py "$SRC_DIR/Plugin.h"
 
 echo "✅ Hook 源码已生成: $SRC_DIR"
