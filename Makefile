@@ -11,7 +11,7 @@ else ifeq ($(SCHEME),rootless)
 endif
 
 TWEAK_NAME = Returngestures
-PACKAGE_VERSION = 1.3
+PACKAGE_VERSION = 0.0.5
 DEBUG = 0
 
 Returngestures_FILES = Tweak.x
