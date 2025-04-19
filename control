@@ -1,0 +1,9 @@
+Package: com.huami.WCFullSwipe
+Name: WCFullSwipe
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: 为微信扩展全屏滑动返回
+Maintainer: huami
+Author: huami
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)

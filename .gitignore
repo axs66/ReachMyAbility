@@ -1,12 +1,3 @@
-# 工作文件夹（临时解包等）
-work/
-
-# 不忽略 output，允许将分析结果持久化到仓库
-!output/
-
-# Python 缓存
-__pycache__/
-*.pyc
-
-# macOS
+.theos/
+packages/
 .DS_Store
