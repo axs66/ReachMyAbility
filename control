@@ -5,5 +5,5 @@ Architecture: iphoneos-arm
 Description: 为微信扩展全屏滑动返回
 Maintainer: Axs
 Author: Axs
-Section: Tweaks
+Section: 微信插件
 Depends: mobilesubstrate (>= 0.9.5000)
