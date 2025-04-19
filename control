@@ -1,6 +1,6 @@
 Package: com.axs.returngestures
 Name: 微信返回手势
-Version: 0.0.1
+Version: 0.0.5
 Architecture: iphoneos-arm
 Description: 为微信扩展全屏滑动返回
 Maintainer: Axs
