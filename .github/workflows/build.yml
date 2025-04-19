@@ -23,7 +23,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.upstream_heads }}
 
       - name: Prepare Theos
-        uses: huami1314/theos-action@main
+        uses: axs66/theos-action@main
 
       - name: Setup GNU Make
         run: |
@@ -43,5 +43,5 @@ jobs:
       - name: Upload specific Deb packages
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: DYYY
+          name: 微信返回手势
           path: packages/*.deb
