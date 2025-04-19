@@ -1,7 +1,7 @@
 TARGET = iphone:clang:latest:15.0
 ARCHS = arm64 arm64e
 
-#export THEOS=/Users/huami/theos
+#export THEOS=/Users/axs66/theos
 #export THEOS_PACKAGE_SCHEME=roothide
 
 ifeq ($(SCHEME),roothide)
@@ -10,12 +10,12 @@ else ifeq ($(SCHEME),rootless)
     export THEOS_PACKAGE_SCHEME = rootless
 endif
 
-TWEAK_NAME = WCFullSwipe
+TWEAK_NAME = Returngestures
 PACKAGE_VERSION = 1.3
 DEBUG = 0
 
-WCFullSwipe_FILES = Tweak.x
-WCFullSwipe_CFLAGS = -fobjc-arc
+Returngestures_FILES = Tweak.x
+Returngestures_CFLAGS = -fobjc-arc
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS)/makefiles/tweak.mk
