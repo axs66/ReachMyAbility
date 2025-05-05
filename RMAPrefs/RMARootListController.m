@@ -45,7 +45,7 @@
         _developer = @[
             @{@"title": @"FollowX", @"icon": @"newspaper", @"type": @"link", @"key": @"https://x.com/TrollStore3", @"id": @"devCell"},
             @{@"title": @"SourceCode", @"icon": @"barcode.viewfinder", @"type": @"link", @"key": @"https://github.com/axs66/ReachMyAbility", @"id": @"devCell"},
-            @{@"title": @"SupportPatreon", @"icon": @"heart.circle", @"type": @"link", @"key": @"https://patreon.com/axs66", @"id": @"devCell"}
+            @{@"title": @"TG频道", @"icon": @"heart.circle", @"type": @"link", @"key": @"https://t.me/wxfx8", @"id": @"devCell"}
         ];
 
         _sections = @[_main, _keepalive, _height, _reset, _developer];
