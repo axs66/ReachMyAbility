@@ -1,11 +1,11 @@
-Package: com.axs.returngestures
-Name: 微信返回手势
-Version: 0.0.5
+Package: com.axs.wechattweak
+Name: 微信输入框自定义
+Depends: mobilesubstrate, firmware (>= 11.0)
+Version: 1.0
 Architecture: iphoneos-arm
-Description: 为微信扩展全屏滑动返回
+Description: Customize WeChat input box and add custom entry
 Maintainer: Axs
 Author: Axs
 Section: 微信插件
-Depends: mobilesubstrate (>= 0.9.5000)
 Icon: https://axs66.github.io/repo/icon/wechat.png
-Sileodepiction: https://axs66.github.io/repo/sileodepiction/returngestures/js.json
+Sileodepiction: https://axs66.github.io/repo/sileodepiction/wechattweak/js.json
