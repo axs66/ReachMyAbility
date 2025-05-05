@@ -1,46 +1,39 @@
 name: CI
 
-# 仅当 build.yml 文件发生变化时触发工作流
 on:
   push:
     paths:
-      - '.github/workflows/build.yml'  # 监控 build.yml 文件的变化
-      - 'control' 
+      - '.github/workflows/build.yml'
+      - '**.xm'
+      - 'control'
     branches:
-      - 'main'  # 仅在推送到 main 分支时触发
+      - main
 
 jobs:
   build:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: true
 
-      - name: Use Theos Setup Action
+      - name: Setup Theos
         uses: axs66/theos-action@main
 
-      - name: Clean previous packages
+      - name: Export variables (skip SDK requirement)
+        run: echo "THEOS_PACKAGE_SCHEME=rootless" >> $GITHUB_ENV
+
+      - name: Clean packages
         run: rm -f ${{ github.workspace }}/packages/*.deb
 
-      - name: Build DEB (rootless + roothide)
+      - name: Build
         run: |
-          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
-          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=roothide
+          make clean
+          make package FINALPACKAGE=1
 
-      - name: List generated DEBs
-        run: ls -lh ${{ github.workspace }}/packages
-
-      - name: Create GitHub Release
-        run: |
-          VERSION=$(date +v%Y%m%d%H%M)
-          gh release create $VERSION ${{ github.workspace }}/packages/*.deb --title "抖音净化 $VERSION" --notes "自动构建 .deb 安装包"
-        env:
-          GH_TOKEN: ${{ secrets.PAT }}
-
-      - name: Upload DEB to workflow artifacts
+      - name: Upload
         uses: actions/upload-artifact@v4.3.3
         with:
           name: 抖音净化
