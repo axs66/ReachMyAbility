@@ -1,11 +1,11 @@
-Package: com.axs.wechattweak
-Name: 微信输入框自定义
-Depends: mobilesubstrate, firmware (>= 11.0)
-Version: 1.0
+Package: com.dvntm.rma
+Name: ReachMyAbility
+Version: 0.0.1
 Architecture: iphoneos-arm
-Description: Customize WeChat input box and add custom entry
-Maintainer: Axs
-Author: Axs
-Section: 微信插件
-Icon: https://axs66.github.io/repo/icon/wechat.png
-Sileodepiction: https://axs66.github.io/repo/sileodepiction/wechattweak/js.json
+Description: A Lightweight Reachability Manager
+Maintainer: dvntm
+Author: dvntm
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+Icon: https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/icon.png
+SileoDepiction: https://raw.githubusercontent.com/dayanch96/ReachMyAbility/main/Resources/depiction.json

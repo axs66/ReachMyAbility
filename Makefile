@@ -1,17 +1,24 @@
-ARCHS = arm64 arm64e
-TARGET = iphone:clang:latest:13.0
-INSTALL_TARGET_PROCESSES = WeChat
+ifeq ($(ROOTLESS),1)
+THEOS_PACKAGE_SCHEME = rootless
+else ifeq ($(ROOTHIDE),1)
+THEOS_PACKAGE_SCHEME = roothide
+endif
+
+DEBUG = 0
+FINALPACKAGE = 1
+TARGET := iphone:clang:16.5:14.0
+PACKAGE_VERSION = 1.0
+INSTALL_TARGET_PROCESSES = SpringBoard
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = WeChatTweak
+TWEAK_NAME = ReachMyAbility
+$(TWEAK_NAME)_FILES = Tweak.x RMAPrefs/RMAUserDefaults.m
+$(TWEAK_NAME)_CFLAGS = -fobjc-arc
 
-WeChatTweak_FILES = Tweak.xm CSCustomViewController.m CSEntrySettingsViewController.m CSInputTextSettingsViewController.m CSSettingTableViewCell.m
-WeChatTweak_CFLAGS = -fobjc-arc
-WeChatTweak_FRAMEWORKS = UIKit CoreGraphics
-WeChatTweak_PRIVATE_FRAMEWORKS = Preferences
+include $(THEOS_MAKE_PATH)/tweak.mk
 
-include $(THEOS)/makefiles/tweak.mk
+SUBPROJECTS += RMAPrefs
 
-after-install::
-	install.exec "killall -9 WeChat"
+include $(THEOS_MAKE_PATH)/aggregate.mk
+
