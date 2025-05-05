@@ -1,1 +1,71 @@
-
+  {
+    "minVersion": "0.1",
+    "headerImage": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/header.png",
+    "class": "DepictionTabView",
+    "tintColor": "#C993EA",
+    "tabs": [
+        {
+            "views": [
+                {
+                    "class": "DepictionSubheaderView",
+                    "useBottomMargin": false,
+                    "title": "ReachMyAbility",
+                    "useBoldText": true
+                },
+                {
+                    "useSpacing": true,
+                    "class": "DepictionMarkdownView",
+                    "markdown": "A Lightweight Reachability Manager"
+                },
+                {
+                    "spacing": 8,
+                    "class": "DepictionSpacerView"
+                },
+                {
+                    "screenshots": [
+                        {
+                            "accessibilityText": "Screenshot0",
+                            "url": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/scr1.jpg"
+                        },
+                        {
+                            "accessibilityText": "Screenshot1",
+                            "url": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/scr2.jpg"
+                        },
+                        {
+                            "accessibilityText": "Screenshot2",
+                            "url": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/scr3.jpg"
+                        }
+                    ],
+                    "itemSize": "{160, 275.41333333333336}",
+                    "class": "DepictionScreenshotsView",
+                    "itemCornerRadius": 6
+                },
+                {
+                    "markdown": "### Features:\n- Disable auto-deactivation\n- Prevent suspending on screen dim\n- Custom keep-alive duration\n- Custom reachability height\n\n*ReachMyAbility preferences can be found in the iOS Settings, does not require respring*",
+                    "class": "DepictionMarkdownView",
+                    "useBottomMargin": false,
+                    "title": "markdown-description",
+                    "useBoldText": true
+                },
+                {
+                    "class": "DepictionSeparatorView"
+                },
+                {
+                    "spacing": 8,
+                    "class": "DepictionSpacerView"
+                },
+                {
+                    "text": "dayanch96",
+                    "class": "DepictionTableTextView",
+                    "title": "Developer"
+                },
+                {
+                    "spacing": 8,
+                    "class": "DepictionSpacerView"
+                }
+            ],
+            "class": "DepictionStackView",
+            "tabname": "Details"
+        }
+    ]
+}

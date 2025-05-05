@@ -1,0 +1,12 @@
+"Enabled" = "Активировать твик";
+"Deactivation" = "Запретить отключение";
+"KeepOnDimmedScreen" = "Не отключать при блокировке экрана";
+
+"KeepAliveDuration" = "Деактивация при бездействии (сек.)";
+"Height" = "Высота отступа";
+
+"ResetSettings" = "Сбросить настройки";
+
+"FollowX" = "Подписаться на X";
+"SourceCode" = "Исходный код";
+"SupportPatreon" = "Подписаться на Patreon";

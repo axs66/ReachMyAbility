@@ -1,0 +1,12 @@
+"Enabled" = "Enable ReachMyAbility";
+"Deactivation" = "Disable deactivation";
+"KeepOnDimmedScreen" = "Prevent suspending on screen dim";
+
+"KeepAliveDuration" = "Keep-alive duration (sec)";
+"Height" = "Reachability height";
+
+"ResetSettings" = "Reset defaults";
+
+"FollowX" = "Follow me on X";
+"SourceCode" = "Source code";
+"SupportPatreon" = "Support me via Patreon";
