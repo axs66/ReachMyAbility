@@ -1,51 +1,47 @@
-name: Build DEB
+name: CI
 
-on: [push]
+# 仅当 build.yml 文件发生变化时触发工作流
+on:
+  push:
+    paths:
+      - '.github/workflows/build.yml'  # 监控 build.yml 文件的变化
+      - 'control' 
+    branches:
+      - 'main'  # 仅在推送到 main 分支时触发
 
 jobs:
   build:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           submodules: true
 
-      - name: Cache Theos (avoid cloning each time)
-        uses: actions/cache@v4.2.1
-        with:
-          path: theos
-          key: force-rebuild-${{ runner.os }}-${{ github.run_id }}
-
-      - name: Install Theos
+      - name: Use Theos Setup Action
         uses: axs66/theos-action@main
+
+      - name: Clean previous packages
+        run: rm -f ${{ github.workspace }}/packages/*.deb
+
+      - name: Build DEB (rootless + roothide)
+        run: |
+          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=roothide
+
+      - name: List generated DEBs
+        run: ls -lh ${{ github.workspace }}/packages
+
+      - name: Create GitHub Release
+        run: |
+          VERSION=$(date +v%Y%m%d%H%M)
+          gh release create $VERSION ${{ github.workspace }}/packages/*.deb --title "抖音净化 $VERSION" --notes "自动构建 .deb 安装包"
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+
+      - name: Upload DEB to workflow artifacts
+        uses: actions/upload-artifact@v4.3.3
         with:
-          # Optional: You can specify a custom branch or tag if needed
-          # branch: 'main'
-
-      - name: Setup GNU Make
-        run: |
-          echo "$(brew --prefix)/opt/make/libexec/gnubin" >> $GITHUB_PATH
-
-      - name: Set THEOS and THEOS_MAKE_PATH environment variables
-        run: |
-          echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
-          echo "THEOS_MAKE_PATH=${{ github.workspace }}/theos/makefiles" >> $GITHUB_ENV
-
-      - name: Build DEB packages
-        run: |
-          mkdir -p packages
-          rm -f packages/*.deb
-          make package FINALPACKAGE=1 -j$(sysctl -n hw.ncpu)
-          make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1 -j$(sysctl -n hw.ncpu)
-          make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1 -j$(sysctl -n hw.ncpu)
-
-      - name: List Generated Packages
-        run: ls -lh packages/
-
-      - name: Upload DEB Artifacts
-        uses: actions/upload-artifact@v4.6.0
-        with:
-          name: 微信返回手势
-          path: packages/*.deb
+          name: 抖音净化
+          path: ${{ github.workspace }}/packages/*.deb
