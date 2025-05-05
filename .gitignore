@@ -1,3 +1,5 @@
-.theos/
+/.DS_Store
+/.cursor
+/.theos
 packages/
-.DS_Store
+*.deb
