@@ -10,12 +10,12 @@ else ifeq ($(SCHEME),rootless)
     export THEOS_PACKAGE_SCHEME = rootless
 endif
 
-TWEAK_NAME = Returngestures
-PACKAGE_VERSION = 0.0.5
+TWEAK_NAME = WeChatEnhance
+PACKAGE_VERSION = 0.0.1
 DEBUG = 0
 
-Returngestures_FILES = Tweak.x
-Returngestures_CFLAGS = -fobjc-arc
+WeChatEnhance_FILES = CustomEntryHooks.xm InputTextHooks.xm CSInputTextSettingsViewController.m CSEntrySettingsViewController.m
+WeChatEnhance_CFLAGS = -fobjc-arc
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS)/makefiles/tweak.mk
