@@ -11,7 +11,7 @@ WeChatTweak_CFLAGS = -fobjc-arc
 WeChatTweak_FRAMEWORKS = UIKit CoreGraphics
 WeChatTweak_PRIVATE_FRAMEWORKS = Preferences
 
-include $(THEOS_MAKE_PATH)/tweak.mk
+include $(THEOS)/makefiles/tweak.mk
 
 after-install::
 	install.exec "killall -9 WeChat"
