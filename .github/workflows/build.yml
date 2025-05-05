@@ -22,7 +22,7 @@ jobs:
           path: theos
           key: force-rebuild-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Clone Theos and SDKs
+      - name: Clone Theos and SDKs (if not already done)
         run: |
           if [ ! -d "theos" ]; then
             git clone --recursive --depth=1 https://github.com/theos/theos.git
