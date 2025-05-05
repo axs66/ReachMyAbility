@@ -1,5 +1,4 @@
 #import <UIKit/UIKit.h>
-#import "CSSettingTableViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
