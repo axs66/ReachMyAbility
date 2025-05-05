@@ -1,7 +1,3 @@
-name: build deb
-
-on: [push]
-
 jobs:
   build:
     runs-on: macos-latest
@@ -25,6 +21,11 @@ jobs:
       - name: Prepare Theos
         uses: axs66/theos-action@main
 
+      - name: Clone Theos SDKs
+        run: |
+          mkdir -p theos
+          git clone --depth=1 https://github.com/theos/sdks theos/sdks
+
       - name: Setup GNU Make
         run: |
           echo "$(brew --prefix)/opt/make/libexec/gnubin" >> $GITHUB_PATH
@@ -43,5 +44,5 @@ jobs:
       - name: Upload specific Deb packages
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: 微信返回手势
+          name: 微信输入框自定义
           path: packages/*.deb
