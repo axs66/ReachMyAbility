@@ -33,6 +33,7 @@ jobs:
 
       - name: Set THEOS environment variable
         run: echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
+              echo "THEOS_MAKE_PATH=${{ github.workspace }}/theos/makefiles" >> $GITHUB_ENV
 
       - name: Build DEB packages
         run: |
