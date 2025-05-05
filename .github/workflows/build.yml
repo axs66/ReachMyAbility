@@ -12,29 +12,29 @@ jobs:
         with:
           submodules: true
 
-      - name: Generate Cache Key
-        run: |
-          echo upstream_heads=$(git ls-remote https://github.com/roothide/theos | head -n 1 | cut -f 1)-$(git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1) >> $GITHUB_ENV
-
-      - name: Cache Theos
-        uses: actions/cache@v4.2.1
-        with:
-          path: ${{ github.workspace }}/theos
-          key: ${{ runner.os }}-${{ env.upstream_heads }}
-
-      - name: Prepare Theos
-        uses: axs66/theos-action@main
-
-      - name: Clone Theos SDKs
-        run: |
-          mkdir -p theos
-          git clone --depth=1 https://github.com/theos/sdks theos/sdks
-
-      - name: Setup GNU Make
+      - name: Setup GNU Make (gmake as make)
         run: |
           echo "$(brew --prefix)/opt/make/libexec/gnubin" >> $GITHUB_PATH
 
-      - name: Build Packages
+      - name: Cache Theos (avoid cloning each time)
+        uses: actions/cache@v4.2.1
+        with:
+          path: theos
+          key: force-rebuild-${{ runner.os }}-${{ github.run_id }}
+
+      - name: Clone Theos and SDKs
+        run: |
+          if [ ! -d "theos" ]; then
+            git clone --recursive --depth=1 https://github.com/theos/theos.git
+          fi
+          if [ ! -d "theos/sdks" ]; then
+            git clone --depth=1 https://github.com/theos/sdks.git theos/sdks
+          fi
+
+      - name: Set THEOS environment variable
+        run: echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
+
+      - name: Build DEB packages
         run: |
           mkdir -p packages
           rm -f packages/*.deb
@@ -42,11 +42,11 @@ jobs:
           make package THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1 -j$(sysctl -n hw.ncpu)
           make package THEOS_PACKAGE_SCHEME=roothide FINALPACKAGE=1 -j$(sysctl -n hw.ncpu)
 
-      - name: Show Generated Debs
+      - name: List Generated Packages
         run: ls -lh packages/
 
       - name: Upload DEB Artifacts
         uses: actions/upload-artifact@v4.6.0
         with:
-          name: 微信输入框自定义
+          name: 微信返回手势
           path: packages/*.deb
