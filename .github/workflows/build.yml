@@ -31,9 +31,10 @@ jobs:
             git clone --depth=1 https://github.com/theos/sdks.git theos/sdks
           fi
 
-      - name: Set THEOS environment variable
-        run: echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
-              echo "THEOS_MAKE_PATH=${{ github.workspace }}/theos/makefiles" >> $GITHUB_ENV
+      - name: Set THEOS and THEOS_MAKE_PATH
+        run: |
+          echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
+          echo "THEOS_MAKE_PATH=${{ github.workspace }}/theos/makefiles" >> $GITHUB_ENV
 
       - name: Build DEB packages
         run: |
