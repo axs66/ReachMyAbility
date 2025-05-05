@@ -1,11 +1,11 @@
-Package: com.dvntm.rma
+Package: com.Axs.rma
 Name: ReachMyAbility
 Version: 0.0.1
 Architecture: iphoneos-arm
 Description: A Lightweight Reachability Manager
-Maintainer: dvntm
-Author: dvntm
+Maintainer:Axs
+Author: A
 Section: Tweaks
 Depends: mobilesubstrate (>= 0.9.5000)
-Icon: https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/icon.png
-SileoDepiction: https://raw.githubusercontent.com/dayanch96/ReachMyAbility/main/Resources/depiction.json
+Icon: https://raw.githubusercontent.com/axs66/ReachMyAbility/refs/heads/main/Resources/icon.png
+SileoDepiction: https://raw.githubusercontent.com/axs66/ReachMyAbility/main/Resources/depiction.json
