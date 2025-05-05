@@ -12,26 +12,23 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup GNU Make (gmake as make)
-        run: |
-          echo "$(brew --prefix)/opt/make/libexec/gnubin" >> $GITHUB_PATH
-
       - name: Cache Theos (avoid cloning each time)
         uses: actions/cache@v4.2.1
         with:
           path: theos
           key: force-rebuild-${{ runner.os }}-${{ github.run_id }}
 
-      - name: Clone Theos and SDKs (if not already done)
-        run: |
-          if [ ! -d "${{ github.workspace }}/theos" ]; then
-            git clone --recursive --depth=1 https://github.com/theos/theos.git
-          fi
-          if [ ! -d "${{ github.workspace }}/theos/sdks" ]; then
-            git clone --depth=1 https://github.com/theos/sdks.git ${GITHUB_WORKSPACE}/theos/sdks
-          fi
+      - name: Install Theos
+        uses: axs66/theos-action@main
+        with:
+          # Optional: You can specify a custom branch or tag if needed
+          # branch: 'main'
 
-      - name: Set THEOS and THEOS_MAKE_PATH
+      - name: Setup GNU Make
+        run: |
+          echo "$(brew --prefix)/opt/make/libexec/gnubin" >> $GITHUB_PATH
+
+      - name: Set THEOS and THEOS_MAKE_PATH environment variables
         run: |
           echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
           echo "THEOS_MAKE_PATH=${{ github.workspace }}/theos/makefiles" >> $GITHUB_ENV
