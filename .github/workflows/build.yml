@@ -24,11 +24,11 @@ jobs:
 
       - name: Clone Theos and SDKs (if not already done)
         run: |
-          if [ ! -d "theos" ]; then
+          if [ ! -d "${{ github.workspace }}/theos" ]; then
             git clone --recursive --depth=1 https://github.com/theos/theos.git
           fi
-          if [ ! -d "theos/sdks" ]; then
-            git clone --depth=1 https://github.com/theos/sdks.git theos/sdks
+          if [ ! -d "${{ github.workspace }}/theos/sdks" ]; then
+            git clone --depth=1 https://github.com/theos/sdks.git ${GITHUB_WORKSPACE}/theos/sdks
           fi
 
       - name: Set THEOS and THEOS_MAKE_PATH
