@@ -1,5 +1,4 @@
 #import <UIKit/UIKit.h>
-#import "CSSettingTableViewCell.h"
 
 @interface CSInputTextSettingsViewController : UITableViewController <UIColorPickerViewControllerDelegate>
 
