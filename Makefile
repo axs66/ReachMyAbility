@@ -6,7 +6,7 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = WeChatTweak
 
-WeChatTweak_FILES = $(wildcard src/*.m) $(wildcard src/*.xm)
+WeChatTweak_FILES = Tweak.xm CSCustomViewController.m CSEntrySettingsViewController.m CSInputTextSettingsViewController.m CSSettingTableViewCell.m
 WeChatTweak_CFLAGS = -fobjc-arc
 WeChatTweak_FRAMEWORKS = UIKit CoreGraphics
 WeChatTweak_PRIVATE_FRAMEWORKS = Preferences
