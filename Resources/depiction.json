@@ -1,6 +1,6 @@
   {
     "minVersion": "0.1",
-    "headerImage": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/header.png",
+    "headerImage": "https://raw.githubusercontent.com/axs66/ReachMyAbility/refs/heads/main/Resources/header.png",
     "class": "DepictionTabView",
     "tintColor": "#C993EA",
     "tabs": [
@@ -25,15 +25,15 @@
                     "screenshots": [
                         {
                             "accessibilityText": "Screenshot0",
-                            "url": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/scr1.jpg"
+                            "url": "https://raw.githubusercontent.com/axs66/ReachMyAbility/refs/heads/main/Resources/scr1.jpg"
                         },
                         {
                             "accessibilityText": "Screenshot1",
-                            "url": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/scr2.jpg"
+                            "url": "https://raw.githubusercontent.com/axs66/ReachMyAbility/refs/heads/main/Resources/scr2.jpg"
                         },
                         {
                             "accessibilityText": "Screenshot2",
-                            "url": "https://raw.githubusercontent.com/dayanch96/ReachMyAbility/refs/heads/main/Resources/scr3.jpg"
+                            "url": "https://raw.githubusercontent.com/axs66/ReachMyAbility/refs/heads/main/Resources/scr3.jpg"
                         }
                     ],
                     "itemSize": "{160, 275.41333333333336}",
