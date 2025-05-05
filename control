@@ -1,6 +1,6 @@
 Package: com.axs.rma
 Name: ReachMyAbility
-Version: 0.0.1
+Version: 1.0
 Architecture: iphoneos-arm
 Description: A Lightweight Reachability Manager
 Maintainer:Axs
